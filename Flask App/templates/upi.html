@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head%}
+    <title>
+        UPI 
+    </title>
+{% endblock %}
+
+{% block body%}
+    <h1>This is UPI Page</h1>
+    <hr>
+    <div >
+        <form action="/user" method='POST'>
+
+            <a href="/user"><button type="button"  id='add 10' >Buy 10 tokens</button></a>
+            <button type="button"  id ='add 20' >Buy 20 tokens</button>
+            <button type="button"  id ='add 100'>Buy 100 tokens</button>
+
+        </form>
+
+    </div>
+    
+    
+
+    
+
+{% endblock%}

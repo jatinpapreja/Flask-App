@@ -1,0 +1,33 @@
+{% extends 'base.html'%}
+
+{% block head%}
+    <title>Register</title>
+{% endblock%}
+
+{% block body%}
+    <div class="container">
+        
+        <form action="/register" method = 'POST'>
+            <label for="first_name">Firstname:</label>
+            <input class =" form-control" type="text" name="first_name" id="first_name" placeholder="Enter your firstname">
+            <br>
+            <label for="last_name">Lastname:</label>
+            <input class =" form-control" type="text" name="last_name" id="last_name" placeholder="Enter your lastname">
+            <br>
+            <label for="age">Age:</label>
+            <input class =" form-control" type="text" name="age" id="age" placeholder="Enter your age">
+            <br>
+            <label for="contact_no">Contact No.:</label>
+            <input class =" form-control" type="text" name="contact_no" id="contact_no" placeholder="Enter your Contact No.">
+            <br>
+            <label for="email">Email:</label>
+            <input class =" form-control" type="text" name="email" id="email" placeholder="Enter your email">
+            <br>
+            <label for="password">Password:</label>
+            <input class="form-control" type="password" name="password" id="password" placeholder="Enter your Password">
+            <br>
+            <input class="btn btn-primary"type="submit" value="Submit">
+        </form>
+    </div>
+    
+{% endblock%}
