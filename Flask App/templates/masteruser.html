@@ -1,0 +1,35 @@
+{%extends 'base.html'%}
+
+{% block head%}
+    <title>Master User</title>
+{% endblock %}
+
+{% block body %}
+    <div>
+        <br>
+        <div>    
+            <h1 style="display: inline;">This is Master User Page</h1>
+            <a style="display: inline;" class = "btn btn-success float-right" href="/create_session">Create Session</a>
+            <a style="display: inline;" class = "btn btn-success float-right" href="{{url_for('logout')}}">Logout</a>
+
+       </div>
+        <br>
+        <hr>
+        <div class="container">
+            <h3>Available Sessions</h3>
+            {% if available_sessions|length==0%}
+                <h4>No Sessions available.Create sessions by clicking 'Create Session button'.</h4>
+            {% else %}
+                {% for i in range(available_sessions|length) %}
+                    <p>{{available_sessions[i]}}</p>
+                    <a class="btn btn-danger" href="/masteruser/delete/{{i}}">Delete</a>
+                    <a class="btn btn-success" href="/masteruser/edit/{{i}}">Edit</a>
+                    <br>
+                    <hr>
+                {%endfor%}
+        
+            {%endif%}
+        </div>
+        
+    </div>
+{%endblock%}

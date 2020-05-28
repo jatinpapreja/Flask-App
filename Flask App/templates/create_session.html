@@ -1,0 +1,27 @@
+{% extends 'base.html'%}
+
+{% block head%}
+    <title>Create Session</title>
+{% endblock%}
+
+{% block body%}
+    <div class="container">
+        
+        <form action="/create_session" method = 'POST'>
+            <label for="date">Date:</label>
+            <input class =" form-control" type="text" name="date" id="date" placeholder="Enter Date">
+            <br>
+            <label for="start_time">Start Time:</label>
+            <input class =" form-control" type="text" name="start_time" id="start_time" placeholder="Enter Start Time">
+            <br>
+            <label for="end_time">End Time:</label>
+            <input class =" form-control" type="text" name="end_time" id="end_time" placeholder="Enter End Time">
+            <br>
+            <label for="details">Details:</label>
+            <textarea class =" form-control" name="details" id="details" cols="30" rows="10" placeholder="Enter Details about session"></textarea>
+            <br>
+            <input class="btn btn-primary"type="submit" value="Submit">
+        </form>
+    </div>
+    
+{% endblock%}
