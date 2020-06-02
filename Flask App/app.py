@@ -13,7 +13,7 @@ config = {
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 db = firebase.database()
-available_sessions =list(db.child('Sessions').get().val().values())
+# available_sessions =list(db.child('Sessions').get().val().values())
 User = {
     'first_name':'',
     'last_name':'',
@@ -30,7 +30,8 @@ new_session = {
     'start_time':'',
     'end_time':'',
     'details':'',
-    'users_joined':[]
+    'users_joined':[],
+    'cost':0
 }
 # class User(object):
 #     def __init__(self,first_name,last_name,age,email,password,contact_no):
@@ -69,15 +70,13 @@ def sign_in():
             user = auth.sign_in_with_email_and_password(email,password)
             session['localId']=user['localId']
             if email=='kartikay@gmail.com':
+                available_sessions =list(db.child('Sessions').get().val().values())
                 return render_template('masteruser.html',available_sessions = available_sessions)
             else:
-                user = list(db.child('Users').child(user['localId']).get().val().values())[0]
-            #print(db.child(user['localId']).get().val().values())
-            # user = db.get(email[:-4]).val().values()
-            # print(user)
-                return render_template('user.html',user = user)
-        except Exception as e:
-            raise e
+                # user = list(db.child('Users').child(user['localId']).get().val().values())[0]
+                # return render_template('user.html',user = user)
+                return redirect(url_for('user'))
+        except:
             return render_template('/sign_in.html',us=unsuccessful)
     return render_template('sign_in.html')
 
@@ -105,6 +104,7 @@ def create_session():
         new_session['start_time'] = request.form['start_time']
         new_session['end_time'] = request.form['end_time']
         new_session['details'] = request.form['details']
+        new_session['cost'] = request.form['cost']
         db.child('Sessions').push(new_session)
         return redirect(url_for('masteruser'))
     return render_template('create_session.html')
@@ -118,6 +118,15 @@ def masteruser():
 def masterdelete(id):
     available_id =list(db.child('Sessions').get().val().keys())
     delete_id = available_id[id]
+    data = db.child('Sessions').child(delete_id).get().val()
+    if 'users_joined' in data:
+        for elem in data['users_joined']:
+            user = list(db.child('Users').child(elem['localId']).get().val().values())[0]
+            user['tokens']+=int(elem['cost'])
+            user['classes'].remove(delete_id)
+            db.child('Users').child(elem['localId']).remove()
+            db.child('Users').child(elem['localId']).push(user)
+
     db.child('Sessions').child(delete_id).remove()
     return redirect(url_for('masteruser'))
 
@@ -132,6 +141,7 @@ def masteredit(id):
         new_session['start_time'] = request.form['start_time']
         new_session['end_time'] = request.form['end_time']
         new_session['details'] = request.form['details']
+        new_session['cost'] = request.form['cost']
         if 'users_joined' in data:
             new_session['users_joined']=data['users_joined']
         db.child('Sessions').child(edit_id).update(new_session)
@@ -147,7 +157,61 @@ def upi():
     if "localId" in session:
         return render_template('upi.html')
     else:
-        render_template('home.html')
+        return render_template('home.html')
+
+@app.route('/book_session')
+def book_session():
+    if "localId" in session:
+        available_sessions =list(db.child('Sessions').get().val().values())
+        return render_template('book_session.html',available_sessions=available_sessions)
+    else:
+        return render_template('home.html')
+
+@app.route('/buy/<int:id>')
+def buy(id):
+    localId = session['localId']
+    user = list(db.child('Users').child(localId).get().val().values())[0]
+    available_id =list(db.child('Sessions').get().val().keys())
+    edit_id = available_id[id]
+    data = list(db.child('Sessions').get().val().values())[id]
+    if user['tokens']>=int(data['cost']):
+        user['tokens']-=int(data['cost'])
+        if 'classes' in user:
+            user['classes'].append(edit_id)
+        else:
+            user['classes']=[edit_id]
+        
+        db.child('Users').child(localId).remove()
+        db.child('Users').child(localId).push(user)
+
+
+        join = {}
+        join['first_name']=user['first_name']
+        join['last_name']=user['last_name']
+        join['email']=user['email']
+        join['cost']=data['cost']
+        join['localId'] = localId
+
+        if 'users_joined' in data:
+            data['users_joined'].append(join)
+        else:
+            data['users_joined']=[join]
+        
+        db.child('Sessions').child(edit_id).update(data)
+
+        return redirect(url_for('user'))
+
+
+    else:
+        unsuccessful='You do not have enough tokens to buy this session.'
+        return redirect(url_for('book_session',uns=unsuccessful))
+
+    
+
+
+
+
+
 @app.route('/logout')
 def logout():
     session.pop('localId',None)
@@ -164,7 +228,41 @@ def user():
     #         print(100)
     localId = session['localId']
     user = list(db.child('Users').child(localId).get().val().values())[0]
-    return render_template('user.html',user=user)
+    classes = []
+    if 'classes' in user:
+        for elem in user['classes']:
+            data = db.child('Sessions').child(elem).get().val() 
+            d = {}
+            d['date']=data['date']
+            d['start_time']=data['start_time']
+            d['end_time']=data['end_time']
+            d['cost']=data['cost']
+            d['details']=data['details']
+            classes.append(d)  
+
+    return render_template('user.html',user=user,classes=classes)
+
+@app.route('/user/delete/<int:id>')
+def userdelete(id):
+    localId = session['localId']
+    user = list(db.child('Users').child(localId).get().val().values())[0]
+    delete_id = user['classes'][id]
+    user['classes'].pop(id)
+    data = db.child('Sessions').child(delete_id).get().val()
+    
+    for elem in data['users_joined']:
+        if elem['first_name']==user['first_name'] and elem['last_name']==user['last_name'] and elem['email']==user['email']:
+            user['tokens']+=int(elem['cost'])
+            data['users_joined'].remove(elem)
+            break
+
+    db.child('Sessions').child(delete_id).update(data)
+    db.child('Users').child(localId).remove()
+    db.child('Users').child(localId).push(user)
+    return redirect(url_for('user')) 
+
+
+
 
 @app.route('/add10')
 def add10():
@@ -173,8 +271,9 @@ def add10():
     user['tokens']+=10
     db.child('Users').child(localId).remove()
     db.child('Users').child(localId).push(user)
-    user = list(db.child('Users').child(localId).get().val().values())[0]   
-    return render_template('user.html',user=user)
+    # user = list(db.child('Users').child(localId).get().val().values())[0]   
+    # return render_template('user.html',user=user)
+    return redirect(url_for('user'))
 
 @app.route('/add20')
 def add20():
@@ -183,8 +282,10 @@ def add20():
     user['tokens']+=20
     db.child('Users').child(localId).remove()
     db.child('Users').child(localId).push(user)
-    user = list(db.child('Users').child(localId).get().val().values())[0]
-    return render_template('user.html',user=user)
+    # user = list(db.child('Users').child(localId).get().val().values())[0]
+    # return render_template('user.html',user=user)
+    return redirect(url_for('user'))
+
 
 @app.route('/add100')
 def add100():
@@ -193,8 +294,10 @@ def add100():
     user['tokens']+=100
     db.child('Users').child(localId).remove()
     db.child('Users').child(localId).push(user)
-    user = list(db.child('Users').child(localId).get().val().values())[0]
-    return render_template('user.html',user=user)
+    # user = list(db.child('Users').child(localId).get().val().values())[0]
+    # return render_template('user.html',user=user)
+    return redirect(url_for('user'))
+
     
 
     

@@ -1,0 +1,36 @@
+{%extends 'base.html'%}
+
+{% block head%}
+    <title>Sessions</title>
+{% endblock %}
+
+{% block body %}
+        <!-- {% if uns%}
+        <div class="alert alert-danger"><h2>{{uns}}</h2></div>
+        {% endif%} -->
+       
+        <div class="container">
+
+            {% if uns %}
+                <div class="alert alert-danger"><h2>{{uns}}</h2></div>
+            {% endif%}
+
+
+            <h3>Available Sessions</h3>
+            {% if available_sessions|length==0%}
+                <h4>No Sessions available.Create sessions by clicking 'Create Session button'.</h4>
+            {% else %}
+                {% for i in range(available_sessions|length) %}
+                    <p>{{available_sessions[i]['date']}}</p>
+                    <p>{{available_sessions[i]['start_time']}} - {{available_sessions[i]['end_time']}}</p>
+                    <p>{{available_sessions[i]['details']}}</p>
+                    <p>{{available_sessions[i]['cost']}}</p>
+                    <a class="btn btn-success" href="/buy/{{i}}">Buy</a>
+                    <br>
+                    <hr>
+                {%endfor%}
+        
+            {%endif%}
+        </div>
+        
+{%endblock%}

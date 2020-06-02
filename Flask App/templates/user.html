@@ -10,7 +10,7 @@
     <div>    
         <h1 style="display: inline;">Details of User</h1>
         <a style="display: inline;" class = "btn btn-success float-right" href="{{ url_for('upi', user=user) }}">Buy Tokens</a>
-        <a style="display: inline;" class = "btn btn-success float-right" href="/">Book your Session</a>
+        <a style="display: inline;" class = "btn btn-success float-right" href="{{url_for('book_session')}}">Book your Session</a>
         <a style="display: inline;" class = "btn btn-success float-right" href="{{url_for('logout')}}">Logout</a>
 
 
@@ -24,13 +24,14 @@
     <hr>
     <div>
         <h3>Your Booked Sessions</h3>
-        {% if user['classes']|length==0 %}
+        {% if classes|length==0 %}
             <h4>Book new sessions by clicking "Book your Session"</h4>
         {% else %}
-            {% for elem in user['classes']%}
-                <ol>
-                    <li>Date:{{elem[0]}}   Timings:{{elem[1]}}</li>
-                </ol>
+            {% for i in range(classes|length) %}
+            <p>{{classes[i]}}</p>
+            <a class="btn btn-danger" href="/user/delete/{{i}}">Delete</a>
+            <br>
+            <hr>
             {% endfor %}
         {% endif%}
     </div>
